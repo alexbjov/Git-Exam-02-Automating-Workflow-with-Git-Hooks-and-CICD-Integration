@@ -48,3 +48,48 @@ To github.com:alexbjov/Git-Exam-02-Automating-Workflow-w
 ith-Git-Hooks-and-CICD-Integration.git
  * [new branch]      main -> main
 branch 'main' set up to track 'origin/main'.
+
+
+pull yml
+
+name: Node.js CI
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x] # Specify Node.js versions to test against
+
+    steps:
+    - uses: actions/checkout@v4 # Checks out your repository under $GITHUB_WORKSPACE
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm' # Caches node modules for faster builds
+    - name: Install dependencies
+      run: npm ci # Installs dependencies from package-lock.json
+    - name: Run tests
+      run: npm test # Executes your test command (e.g., Jest, Mocha)
+
+
+approval before merge yml
+
+branches:
+  - name: main
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 1 # Minimum number of approvals required
+        dismiss_stale_reviews: true # Dismiss approvals when new commits are pushed
+        require_code_owner_reviews: false # Require review from code owners (if CODEOWNERS file exists)
+      required_status_checks:
+        strict: true
+        contexts:
+          - "ci/build" # Example: Require CI build to pass
+      enforce_admins: true # Enforce rules for administrators as well
